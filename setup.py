@@ -26,6 +26,6 @@ setup(
         "fallback_version": "0+unknown",
     },
     install_requires=[
-        "matplotlib>=3.0",
+        "matplotlib>=3.7",
     ],
 )

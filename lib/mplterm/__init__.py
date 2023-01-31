@@ -78,10 +78,6 @@ def _detect_protocol():
         raise RuntimeError(f"{term} is not a supported terminal")
 
 
-class _FigureCanvasMplterm(FigureCanvasAgg):
-    supports_blit = False
-
-
 class _MpltermFigureManager(FigureManagerBase):
     def show(self):
         proto = _detect_protocol()
@@ -97,6 +93,11 @@ class _MpltermFigureManager(FigureManagerBase):
         if "rv" in _get_options():
             mem = _revvideo(mem)
         proto.display(mem)
+
+
+class _FigureCanvasMplterm(FigureCanvasAgg):
+    supports_blit = False
+    manager_class = _MpltermFigureManager
 
 
 FigureCanvas = _FigureCanvasMplterm
