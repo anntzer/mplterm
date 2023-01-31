@@ -20,4 +20,4 @@ class Iterm2(Protocol):
         png = buf.getbuffer()
         b64png = base64.b64encode(png)
         sys.stdout.buffer.write(
-            b"\x1b]1337;File=size=%d:%s\a" % (len(png), b64png))
+            b"\x1b]1337;File=size=%d;inline=1:%s\a" % (len(png), b64png))
