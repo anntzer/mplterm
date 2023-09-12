@@ -9,7 +9,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 import numpy as np
 
 from . import _iterm2, _kitty, _sixel
-from ._util import _detect_terminal
+from ._util import _detect_terminal_and_device_attributes
 
 
 try:
@@ -67,12 +67,14 @@ def _detect_protocol():
         pass
     else:
         return _PROTOCOLS[opt.split("=", 1)[1]]()
-    term = _detect_terminal()
+    term, da = _detect_terminal_and_device_attributes()
     if term in ["iTerm2", "mintty"]:
         return _iterm2.Iterm2()
     elif term in ["kitty"]:
         return _kitty.Kitty()
-    elif term in ["mlterm", "XTerm"]:
+    elif "4" in da or term == "XTerm":
+        # If on XTerm without sixel support, still instantiate Sixel() to get
+        # the relevant error message.
         return _sixel.Sixel()
     else:
         raise RuntimeError(f"{term} is not a supported terminal")

@@ -2,7 +2,8 @@ import functools
 from subprocess import Popen, PIPE
 
 from ._util import (
-    Protocol, _csi, _csi_regex, _detect_terminal, _term_query, _TermError)
+    Protocol, _csi, _csi_regex, _detect_terminal_and_device_attributes,
+    _term_query, _TermError)
 
 
 @functools.lru_cache(None)
@@ -26,11 +27,11 @@ class Sixel(Protocol):
     @functools.lru_cache(None)
     def __new__(cls):
         # Primary DA.
-        props, = _term_query(_csi("c"), _csi_regex(r"\?\d+;(.*)c"))
-        if "4" not in props.split(";"):
+        term, da = _detect_terminal_and_device_attributes()
+        if "4" not in da:
             msg = (f"The current terminal does not support sixel graphics "
-                   f"(primary device attributes: {props})")
-            if _detect_terminal() == "XTerm":
+                   f"(primary device attributes: {';'.join(da)})")
+            if term == "XTerm":
                 msg += ("; if using xterm, consider starting it with e.g. "
                         "'xterm -ti vt340'")
             raise OSError(msg)

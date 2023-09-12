@@ -55,15 +55,17 @@ def _term_query(cmd, pattern):
 
 
 @functools.lru_cache(None)
-def _detect_terminal():
+def _detect_terminal_and_device_attributes():
     """Detect the terminal in use."""
     # Query XTVERSION, and then Primary DA to avoid hanging on terminals that
     # do not support XTVERSION (this trick comes from notcurses).  XTVERSION's
     # reply doesn't start with CSI, so it will not be accidentally captured by
     # the second regex.
-    reply, = _term_query(_csi(">0q") + _csi("c"), "(.*)" + _csi_regex(".*c"))
+    xtv, da = _term_query(
+        _csi(">0q") + _csi("c"), "(.*)" + _csi_regex("?[^;]+;(.*)c"))
     prefix = "\x1bP>|"
     suffix = "\x1b\\"
-    if not reply.startswith(prefix) or not reply.endswith(suffix):
+    if not xtv.startswith(prefix) or not xtv.endswith(suffix):
         raise RuntimeError("Failed to detect a supported terminal")
-    return re.match(r"\w+", reply[len(prefix):-len(suffix)]).group(0)
+    return (re.match(r"\w+", xtv[len(prefix):-len(suffix)]).group(0),
+            da.split(";"))

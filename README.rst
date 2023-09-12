@@ -19,7 +19,7 @@ sixel_ protocols, but other protocols may be implemented in the future.
 
 This package's implementation is inspired by itermplot_ and other terminal
 integrations for Matplotlib, as listed below.  (Unlike ``itermplot``,
-``mplterm`` does not support tmux_ or Matplotlib animations.)
+``mplterm`` does not support Matplotlib animations.)
 
 Install with pip_, as any Python package.  Use by setting your
 Matplotlib backend (e.g. via the ``MPLBACKEND`` environment variable) to
@@ -83,7 +83,6 @@ Other terminal backends for Matplotlib
 .. _sixel-capable terminal: https://github.com/saitoha/libsixel#terminal-requirements
 .. _sixel: https://en.wikipedia.org/wiki/Sixel
 .. _sixelplot: https://pypi.org/project/sixelplot/
-.. _tmux: https://tmux.github.io/
 .. _xontrib-kitty: https://pypi.org/project/xontib-kitty/
 .. _xterm: https://invisible-island.net/xterm/
 .. _wsltty: https://github.com/mintty/wsltty
