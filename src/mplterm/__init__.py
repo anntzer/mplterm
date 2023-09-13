@@ -18,6 +18,42 @@ except ImportError:
     __version__ = "0+unknown"
 
 
+_PROTOCOLS = {
+    cls.__name__.lower(): cls for cls in [
+        _iterm2.Iterm2, _kitty.Kitty, _sixel.Sixel]}
+
+
+def _load_options():
+    opts = {
+        "protocol": None,
+        "transparency": None,
+        "revvideo": None,
+    }
+    for word in filter(None, os.environ.get("MPLTERM", "").split(";")):
+        if word == "transparency":
+            opts["transparency"] = True
+        elif word == "revvideo":
+            opts["revvideo"] = True
+        elif word.startswith("protocol="):
+            opts["protocol"] = word.removeprefix("protocol=")
+    if opts["protocol"] is None:
+        term, da = _detect_terminal_and_device_attributes()
+        if term in ["iTerm2", "mintty"]:
+            opts["protocol"] = "iterm2"
+        elif term in ["kitty"]:
+            opts["protocol"] = "kitty"
+        elif "4" in da or term == "XTerm":
+            # If on XTerm without sixel support, still set the protocol to
+            # sixel to get the relevant error message.
+            opts["protocol"] = "sixel"
+        else:  # Else, error out at showtime.
+            opts["protocol"] = f"unsupported-terminal:{term}"
+    return opts
+
+
+_OPTIONS = _load_options()
+
+
 @contextmanager
 def _shrinked(fig, size):
     """
@@ -49,50 +85,19 @@ def _revvideo(mem):
     return rgba.data
 
 
-def _get_options():
-    """Parse the MPLTERM environment variable into individual options."""
-    return os.environ.get("MPLTERM", "").split(":") or []
-
-
-_PROTOCOLS = {
-    cls.__name__.lower(): cls for cls in [
-        _iterm2.Iterm2, _kitty.Kitty, _sixel.Sixel]}
-
-
-def _detect_protocol():
-    """Detect and instantiate the protocol to use."""
-    try:
-        opt = [opt for opt in _get_options() if opt.startswith("proto=")][-1]
-    except IndexError:
-        pass
-    else:
-        return _PROTOCOLS[opt.split("=", 1)[1]]()
-    term, da = _detect_terminal_and_device_attributes()
-    if term in ["iTerm2", "mintty"]:
-        return _iterm2.Iterm2()
-    elif term in ["kitty"]:
-        return _kitty.Kitty()
-    elif "4" in da or term == "XTerm":
-        # If on XTerm without sixel support, still instantiate Sixel() to get
-        # the relevant error message.
-        return _sixel.Sixel()
-    else:
-        raise RuntimeError(f"{term} is not a supported terminal")
-
-
 class _MpltermFigureManager(FigureManagerBase):
     def show(self):
-        proto = _detect_protocol()
+        proto = _PROTOCOLS[_OPTIONS["protocol"]]()
         fig = self.canvas.figure
         with ExitStack() as stack:
             size = proto.get_pixel_size()
             if size is not None:
                 stack.enter_context(_shrinked(fig, size))
-            if proto.supports_transparency and "tr" in _get_options():
+            if proto.supports_transparency and _OPTIONS["transparency"]:
                 stack.enter_context(_transparized(fig))
             fig.draw(self.canvas.get_renderer())
         mem = self.canvas.buffer_rgba()
-        if "rv" in _get_options():
+        if _OPTIONS["revvideo"]:
             mem = _revvideo(mem)
         proto.display(mem)
 

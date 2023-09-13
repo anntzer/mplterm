@@ -41,14 +41,14 @@ Configuration
 -------------
 
 Configuration is done via the ``MPLTERM`` environment variable, which should be
-set to a colon-separate list of codes:
+set to a semicolon-separate list of codes:
 
-- ``proto=...``: Force the protocol to one of ``iterm2``, ``kitty``, or
+- ``protocol=...``: Force the protocol to one of ``iterm2``, ``kitty``, or
   ``sixel``.
-- ``tr``: Make the figure and axes background transparent, if the protocol
-  supports transparency (the sixel protocol, implemented via ImageMagick_,
-  doesn't support it).
-- ``rv``: Reverse-video the colors (similarly to ``itermplot``).
+- ``transparency``: Make the figure and axes background transparent, if the
+  protocol supports transparency (the sixel protocol, implemented via
+  ImageMagick_, doesn't support it).
+- ``revvideo``: Reverse-video the colors (similarly to ``itermplot``).
 
 Other terminal backends for Matplotlib
 --------------------------------------

@@ -67,5 +67,5 @@ def _detect_terminal_and_device_attributes():
     suffix = "\x1b\\"
     if not xtv.startswith(prefix) or not xtv.endswith(suffix):
         raise RuntimeError("Failed to detect a supported terminal")
-    return (re.match(r"\w+", xtv[len(prefix):-len(suffix)]).group(0),
+    return (xtv.removeprefix(prefix).removesuffix(suffix).split()[0],
             da.split(";"))
