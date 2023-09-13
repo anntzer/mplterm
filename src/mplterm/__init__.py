@@ -5,7 +5,6 @@ import importlib.metadata
 import os
 
 from matplotlib.backend_bases import FigureManagerBase
-from matplotlib.backends.backend_agg import FigureCanvasAgg
 import numpy as np
 
 from . import _iterm2, _kitty, _sixel
@@ -25,17 +24,22 @@ _PROTOCOLS = {
 
 def _load_options():
     opts = {
+        "backend": "agg",
         "protocol": None,
         "transparency": None,
         "revvideo": None,
     }
     for word in filter(None, os.environ.get("MPLTERM", "").split(";")):
-        if word == "transparency":
+        if word.startswith("backend="):
+            opts["backend"] = word.removeprefix("backend=")
+        elif word.startswith("protocol="):
+            opts["protocol"] = word.removeprefix("protocol=")
+        elif word == "transparency":
             opts["transparency"] = True
         elif word == "revvideo":
             opts["revvideo"] = True
-        elif word.startswith("protocol="):
-            opts["protocol"] = word.removeprefix("protocol=")
+        else:
+            raise ValueError(f"Unknown option: {word}")
     if opts["protocol"] is None:
         term, da = _detect_terminal_and_device_attributes()
         if term in ["iTerm2", "mintty"]:
@@ -102,7 +106,12 @@ class _MpltermFigureManager(FigureManagerBase):
         proto.display(mem)
 
 
-class _FigureCanvasMplterm(FigureCanvasAgg):
+_backend_module = (lambda name: importlib.import_module(
+    name.removeprefix("module://") if name.startswith("module://")
+    else f"matplotlib.backends.backend_{name.lower()}"))(_OPTIONS["backend"])
+
+
+class _FigureCanvasMplterm(_backend_module.FigureCanvas):
     supports_blit = False
     manager_class = _MpltermFigureManager
 

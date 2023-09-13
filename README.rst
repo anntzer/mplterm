@@ -23,7 +23,8 @@ integrations for Matplotlib, as listed below.  (Unlike ``itermplot``,
 
 Install with pip_, as any Python package.  Use by setting your
 Matplotlib backend (e.g. via the ``MPLBACKEND`` environment variable) to
-``module://mplterm``.  The protocol to be used is normally auto-detected.
+``module://mplterm``.  The protocol to be used is normally auto-detected, but
+can also be configured manually.
 
 Protocols
 ---------
@@ -43,6 +44,7 @@ Configuration
 Configuration is done via the ``MPLTERM`` environment variable, which should be
 set to a semicolon-separate list of codes:
 
+- ``backend=...``: Set the underlying rendering backend (by default, "agg").
 - ``protocol=...``: Force the protocol to one of ``iterm2``, ``kitty``, or
   ``sixel``.
 - ``transparency``: Make the figure and axes background transparent, if the
