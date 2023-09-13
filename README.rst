@@ -21,10 +21,11 @@ This package's implementation is inspired by itermplot_ and other terminal
 integrations for Matplotlib, as listed below.  (Unlike ``itermplot``,
 ``mplterm`` does not support Matplotlib animations.)
 
-Install with pip_, as any Python package.  Use by setting your
-Matplotlib backend (e.g. via the ``MPLBACKEND`` environment variable) to
-``module://mplterm``.  The protocol to be used is normally auto-detected, but
-can also be configured manually.
+Install with pip_ (``pip install git+https://github.com/anntzer/mplterm``).
+Use by setting your Matplotlib backend to ``module://mplterm`` (e.g. by setting
+the ``MPLBACKEND`` environment variable to ``module://mplterm``, or by calling
+``matplotlib.use("module://mplterm")``).  The protocol to be used is normally
+auto-detected, but can also be configured manually.
 
 Protocols
 ---------
