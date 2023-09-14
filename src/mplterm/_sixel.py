@@ -3,7 +3,7 @@ from subprocess import Popen, PIPE
 
 from ._util import (
     Protocol, _csi, _csi_regex, _detect_terminal_and_device_attributes,
-    _term_query, _TermError)
+    _term_query)
 
 
 @functools.lru_cache(None)
@@ -12,12 +12,11 @@ def _getset_max_color_registers():  # XTSMGRAPHICS
     Set the numColorRegisters resource to its maximum value, and return it.
     """
     err, num = _term_query(_csi("?1;4;S"), _csi_regex(r"\?1;(\d);(\d+)S"))
-    if err != "0":
-        raise _TermError
-    err, num = _term_query(
-        _csi("?1;3;%sS" % num), _csi_regex(r"\?1;(\d);(\d+)S"))
-    if err != "0":
-        raise _TermError
+    if err != "0":  # Fallback to standard if terminal does not support query.
+        return 256
+    # Allow setting numColorRegisters to fail, to handle non-xterms with a
+    # fixed number of color registers, such as tmux.
+    _ = _term_query(_csi("?1;3;%sS" % num), _csi_regex(r"\?1;(\d);(\d+)S"))
     return int(num)
 
 
@@ -29,8 +28,9 @@ class Sixel(Protocol):
         # Primary DA.
         term, da = _detect_terminal_and_device_attributes()
         if "4" not in da:
-            msg = (f"The current terminal does not support sixel graphics "
-                   f"(primary device attributes: {';'.join(da)})")
+            msg = (f"The current terminal ({term or '<unknown>'}) does not "
+                   f"support sixel graphics (primary device attributes: "
+                   f"{';'.join(da)})")
             if term == "XTerm":
                 msg += ("; if using xterm, consider starting it with e.g. "
                         "'xterm -ti vt340'")
@@ -39,9 +39,8 @@ class Sixel(Protocol):
 
     @staticmethod
     def get_pixel_size():  # XTWINOPS
-        reply = _term_query(_csi("14t"), _csi_regex(r"4;(\d+);(\d+)t"))
-        h, w = map(int, reply)
-        return w, h
+        h, w = _term_query(_csi("14t"), _csi_regex(r"4;(\d+);(\d+)t"))
+        return None if h is w is None else (int(w), int(h))
 
     @staticmethod
     def display(mem):

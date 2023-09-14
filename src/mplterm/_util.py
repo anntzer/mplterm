@@ -21,22 +21,24 @@ class Protocol(ABC):
         """Output an RGBA buffer to the terminal."""
 
 
-class _TermError(Exception):
-    pass
-
-
 # Helpers for generating control sequences and replies.
-def _csi(x): return "\x1b\x5b" + x  # ESC [, but don't mess up autoindent.
-def _csi_regex(x): return "\x1b\\\x5b" + x
+def _csi(x): return "\x1b[" + x
+def _csi_regex(x): return r"\x1b\[" + x
 
 
 @functools.lru_cache(None)
-def _term_query(cmd, pattern):
+def _term_query(cmd, pattern, *, add_terminator=True):
     """
     Send a control sequence and wait for a reply matching *pattern*.
 
     For practicality, *cmd* and *pattern* are strs and get latin-1-encoded.
     """
+    # End the queries with a (widely supported) Primary DA query to avoid
+    # hanging on terminals that do not support the first (this trick comes from
+    # notcurses).
+    if add_terminator:
+        cmd = f"{cmd}{_csi('c')}"
+        pattern = f"(?:{pattern})?" + _csi_regex(r"\?\d+[;0-9]*c")
     regex = re.compile(pattern.encode("latin-1"))
     curses.initscr()
     try:
@@ -49,7 +51,8 @@ def _term_query(cmd, pattern):
             match = regex.fullmatch(buf)
             if match:
                 break
-        return [group.decode("latin-1") for group in match.groups()]
+        return [group.decode("latin-1") if group else None
+                for group in match.groups()]
     finally:
         curses.endwin()
 
@@ -57,15 +60,9 @@ def _term_query(cmd, pattern):
 @functools.lru_cache(None)
 def _detect_terminal_and_device_attributes():
     """Detect the terminal in use."""
-    # Query XTVERSION, and then Primary DA to avoid hanging on terminals that
-    # do not support XTVERSION (this trick comes from notcurses).  XTVERSION's
-    # reply doesn't start with CSI, so it will not be accidentally captured by
-    # the second regex.
-    xtv, da = _term_query(
-        _csi(">0q") + _csi("c"), "(.*)" + _csi_regex("?[^;]+;(.*)c"))
-    prefix = "\x1bP>|"
-    suffix = "\x1b\\"
-    if not xtv.startswith(prefix) or not xtv.endswith(suffix):
-        raise RuntimeError("Failed to detect a supported terminal")
-    return (xtv.removeprefix(prefix).removesuffix(suffix).split()[0],
-            da.split(";"))
+    xtv, = _term_query(_csi(">0q"), r"(?:\x1bP>\|(\w+).*\x1b\\)?")
+    # Even with no primary DA reported there may or may not be a semicolon
+    # before the final "c" (xterm says no, kitty says yes).
+    da, = _term_query(
+        _csi("c"), _csi_regex(r"\?\d+([;0-9]*)c"), add_terminator=False)
+    return xtv, [] if not da or da == ";" else da.removeprefix(";").split(";")

@@ -53,7 +53,7 @@ def _load_options():
             # sixel to get the relevant error message.
             opts["protocol"] = "sixel"
         else:  # Else, error out at showtime.
-            opts["protocol"] = f"unsupported-terminal:{term}"
+            opts["protocol"] = f"unsupported-terminal:{term or '<unknown>'}"
     return opts
 
 
