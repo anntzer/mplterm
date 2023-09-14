@@ -2,10 +2,12 @@
 
 from contextlib import ExitStack, contextmanager
 import importlib.metadata
+from io import BytesIO
 import os
 
 from matplotlib.backend_bases import FigureManagerBase
 import numpy as np
+from PIL import Image
 
 from . import _iterm2, _kitty, _sixel
 from ._util import _detect_terminal_and_device_attributes
@@ -99,8 +101,16 @@ class _MpltermFigureManager(FigureManagerBase):
                 stack.enter_context(_shrinked(fig, size))
             if proto.supports_transparency and _OPTIONS["transparency"]:
                 stack.enter_context(_transparized(fig))
-            fig.draw(self.canvas.get_renderer())
-        mem = self.canvas.buffer_rgba()
+            try:
+                fig.draw(self.canvas.get_renderer())
+                mem = self.canvas.buffer_rgba()
+            except Exception:  # builtin cairo backend support.
+                buf = BytesIO()
+                fig.savefig(buf, format="png")
+                mem = np.asarray(Image.open(buf))
+                if mem.shape[-1] == 3:
+                    mem = np.dstack(
+                        [mem, np.full(mem.shape[:2], 0xff, np.uint8)])
         if _OPTIONS["revvideo"]:
             mem = _revvideo(mem)
         proto.display(mem)
