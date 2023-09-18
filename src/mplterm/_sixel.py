@@ -16,7 +16,7 @@ def _getset_max_color_registers():  # XTSMGRAPHICS
         return 256
     # Allow setting numColorRegisters to fail, to handle non-xterms with a
     # fixed number of color registers, such as tmux.
-    _ = _term_query(_csi("?1;3;%sS" % num), _csi_regex(r"\?1;(\d);(\d+)S"))
+    _ = _term_query(_csi(f"?1;3;{num}S"), _csi_regex(r"\?1;(\d);(\d+)S"))
     return int(num)
 
 
