@@ -30,8 +30,8 @@ auto-detected, but can also be configured manually.
 Protocols
 ---------
 
-- The ``iterm2`` protocol is supported by the iterm2 and wsltty_ terminals.
-  Note that plain mintty_ is not supported.
+- The ``iterm2`` protocol is supported by the iterm2, WezTerm, and wsltty_
+  terminals.  Note that plain mintty_ is not supported.
 - The ``kitty`` protocol is only supported by the kitty terminal.  The
   implementation is currently based on ``icat``, and thus requires ImageMagick.
 - The ``sixel`` protocol requires a `sixel-capable terminal`_ (xterm_ and

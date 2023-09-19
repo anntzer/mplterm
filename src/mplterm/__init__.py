@@ -44,7 +44,7 @@ def _load_options():
             raise ValueError(f"Unknown option: {word}")
     if opts["protocol"] is None:
         term, da = _detect_terminal_and_device_attributes()
-        if term in ["iTerm2", "mintty"]:
+        if term in ["iTerm2", "mintty", "WezTerm"]:
             opts["protocol"] = "iterm2"
         elif term in ["kitty"]:
             opts["protocol"] = "kitty"

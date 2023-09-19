@@ -15,8 +15,9 @@ def _getset_max_color_registers():  # XTSMGRAPHICS
     if err != "0":  # Fallback to standard if terminal does not support query.
         return 256
     # Allow setting numColorRegisters to fail, to handle non-xterms with a
-    # fixed number of color registers, such as tmux.
-    _ = _term_query(_csi(f"?1;3;{num}S"), _csi_regex(r"\?1;(\d);(\d+)S"))
+    # fixed number of color registers, such as tmux.  WezTerm even skips the
+    # third reply parameter, just indicating failure (CSI?1;2S).
+    _term_query(_csi(f"?1;3;{num}S"), _csi_regex(r"\?1;(\d)(:;(\d+))?S"))
     return int(num)
 
 
