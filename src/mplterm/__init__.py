@@ -9,8 +9,7 @@ from matplotlib.backend_bases import FigureManagerBase
 import numpy as np
 from PIL import Image
 
-from . import _iterm2, _kitty, _sixel
-from ._util import _detect_terminal_and_device_attributes
+from . import _iterm2, _kitty, _sixel, _util
 
 
 try:
@@ -43,7 +42,7 @@ def _load_options():
         else:
             raise ValueError(f"Unknown option: {word}")
     if opts["protocol"] is None:
-        term, da = _detect_terminal_and_device_attributes()
+        term, da = _util.detect_terminal_and_device_attributes()
         if term in ["iTerm2", "mintty", "WezTerm"]:
             opts["protocol"] = "iterm2"
         elif term in ["kitty"]:
@@ -96,7 +95,7 @@ class _MpltermFigureManager(FigureManagerBase):
         proto = _PROTOCOLS[_OPTIONS["protocol"]]()
         fig = self.canvas.figure
         with ExitStack() as stack:
-            size = proto.get_pixel_size()
+            size = _util.get_pixel_size()
             if size is not None:
                 stack.enter_context(_shrinked(fig, size))
             if proto.supports_transparency and _OPTIONS["transparency"]:
