@@ -1,15 +1,7 @@
-from io import BytesIO
-import subprocess
-
-import PIL
+import base64
+import sys
 
 from ._util import Protocol
-
-
-def _icat(args, **kwargs):
-    # TODO: Directly support image protocol (will also work for WezTerm), also
-    # re: animations.
-    return subprocess.run(["kitty", "+kitten", "icat", *args], **kwargs)
 
 
 class Kitty(Protocol):
@@ -18,6 +10,9 @@ class Kitty(Protocol):
     @staticmethod
     def display(mem):
         h, w, _ = mem.shape
-        buf = BytesIO()
-        PIL.Image.frombuffer("RGBA", (w, h), mem).save(buf, format="png")
-        _icat([], input=buf.getbuffer())
+        b64img = base64.b64encode(mem)
+        n_chunks = (len(b64img) - 1) // 4096 + 1
+        for i in range(n_chunks):
+            sys.stdout.buffer.write(
+                b"\x1b_Ga=T,s=%d,v=%d,m=%d;%s\x1b\\"
+                % (w, h, i < n_chunks - 1, b64img[i * 4096 : (i + 1) * 4096]))
