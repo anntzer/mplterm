@@ -5,6 +5,7 @@ import functools
 import os
 import re
 import sys
+import warnings
 
 
 class Protocol(ABC):
@@ -21,7 +22,15 @@ class Protocol(ABC):
     @staticmethod
     @abstractmethod
     def display(mem):
-        """Output an RGBA buffer to the terminal."""
+        """Display RGBA memoryview *mem*."""
+
+    @staticmethod
+    def display_frame(holder_id, mem):
+        """Display RGBA memoryview *mem* at position *holder_id*."""
+
+    @staticmethod
+    def display_gif(path):
+        """Display the GIF file read from the given *path*."""
 
 
 # Helpers for generating control sequences and replies.
@@ -42,22 +51,29 @@ def term_query(cmd, pattern, *, add_terminator=True):
     if add_terminator:
         cmd = f"{cmd}{_csi('c')}"
         pattern = f"(?:{pattern})?" + _csi_regex(r"\?\d+[;0-9]*c")
+    cmd = cmd.encode("latin-1")
     regex = re.compile(pattern.encode("latin-1"))
-    curses.initscr()
     try:
-        curses.cbreak()
-        sys.stdout.buffer.write(cmd.encode("latin-1"))
-        sys.stdout.buffer.flush()
-        buf = b""
-        while True:
-            buf += sys.stdin.buffer.read(1)
-            match = regex.fullmatch(buf)
-            if match:
-                break
-        return [group.decode("latin-1") if group else None
-                for group in match.groups()]
-    finally:
-        curses.endwin()
+        curses.initscr()
+        try:
+            curses.cbreak()
+            sys.stdout.buffer.write(cmd)
+            sys.stdout.buffer.flush()
+            buf = b""
+            while True:
+                buf += sys.stdin.buffer.read(1)
+                match = regex.fullmatch(buf)
+                if match:
+                    break
+            return [group.decode("latin-1") if group else None
+                    for group in match.groups()]
+        finally:
+            curses.endwin()
+    except KeyboardInterrupt:
+        warnings.warn(
+            f"interrupted while querying {cmd} and the read buffer "
+            f"contained {buf}")
+        raise
 
 
 @functools.lru_cache(None)

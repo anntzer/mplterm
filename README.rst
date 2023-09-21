@@ -17,9 +17,8 @@ mplterm: terminal backend(s) for Matplotlib
 Currently, ``mplterm`` supports (to various degrees) the iterm2_, kitty_, and
 sixel_ protocols, but other protocols may be implemented in the future.
 
-This package's implementation is inspired by itermplot_ and other terminal
-integrations for Matplotlib, as listed below.  (Unlike ``itermplot``,
-``mplterm`` does not support Matplotlib animations.)
+This package's implementation is heavily inspired by itermplot_ and other
+terminal integrations for Matplotlib, as listed below.
 
 Install with pip_ (``pip install git+https://github.com/anntzer/mplterm``).
 Use by setting your Matplotlib backend to ``module://mplterm`` (e.g. by setting
@@ -33,13 +32,22 @@ Protocols
 The following protocols are implemented; they are listed in the default order
 in which ``mplterm`` searches a protocol supported by the underlying terminal.
 
-- The ``kitty`` protocol is supported by the kitty and WezTerm terminals.
+- The ``kitty`` protocol is supported by the kitty and WezTerm_ terminals.
 - The ``iterm2`` protocol is supported by the iterm2, WezTerm, and wsltty_
   terminals.  Note that plain mintty_ is not supported.
 - The ``sixel`` protocol requires a `sixel-capable terminal`_ (xterm_ and
   mlterm_ are known to work) and ImageMagick≥7.0.1.  Note that ``mplterm`` will
   automatically and silently set (once) the ``numColorRegisters`` resource to
   its maximum allowed value.
+
+Animations
+~~~~~~~~~~
+
+The ``kitty`` and ``iterm2`` protocols provide different types of support for
+(standard, timed) animations.  The ``kitty`` protocol runs the actual animation
+loop in real time and updates the displayed figure, as would be done in a GUI
+window.  The ``iterm2`` protocol instead saves the animation to a GIF file
+(``save_count`` may need to be set accordingly) and then displays that file.
 
 Configuration
 -------------
@@ -92,4 +100,5 @@ Other terminal backends for Matplotlib
 .. _sixelplot: https://pypi.org/project/sixelplot/
 .. _xontrib-kitty: https://pypi.org/project/xontib-kitty/
 .. _xterm: https://invisible-island.net/xterm/
+.. _WezTerm: https://wezfurlong.org/wezterm/
 .. _wsltty: https://github.com/mintty/wsltty

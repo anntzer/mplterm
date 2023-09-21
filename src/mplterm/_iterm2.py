@@ -21,7 +21,13 @@ class Iterm2(Protocol):
         h, w, _ = mem.shape
         buf = BytesIO()
         PIL.Image.frombuffer("RGBA", (w, h), mem).save(buf, format="png")
-        png = buf.getbuffer()
-        b64png = base64.b64encode(png)
+        b64 = base64.b64encode(buf.getbuffer())
         sys.stdout.buffer.write(
-            b"\x1b]1337;File=size=%d;inline=1:%s\a" % (len(png), b64png))
+            b"\x1b]1337;File=size=%d;inline=1:%s\a" % (len(b64), b64))
+
+    @staticmethod
+    def display_gif(path):
+        contents = path.read_bytes()
+        b64 = base64.b64encode(contents)
+        sys.stdout.buffer.write(
+            b"\x1b]1337;File=size=%d;inline=1:%s\a" % (len(b64), b64))
