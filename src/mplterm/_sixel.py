@@ -28,7 +28,7 @@ class Sixel(Protocol):
         term, da = _util.detect_terminal_and_device_attributes()
         # If on XTerm without sixel support, still pretend to support it
         # initially, to get the relevant error message below.
-        return "4" in da or term == "XTerm"
+        return "4" in da or term and term.startswith("XTerm(")
 
     @functools.lru_cache(None)
     def __new__(cls):

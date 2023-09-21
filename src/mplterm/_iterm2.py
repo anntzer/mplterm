@@ -14,7 +14,7 @@ class Iterm2(Protocol):
     @staticmethod
     def is_supported():
         term, da = _util.detect_terminal_and_device_attributes()
-        return term in ["iTerm2", "mintty", "WezTerm"]
+        return term.startswith(("iTerm2 ", "mintty ", "WezTerm "))
 
     @staticmethod
     def display(mem):

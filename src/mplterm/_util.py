@@ -63,7 +63,7 @@ def term_query(cmd, pattern, *, add_terminator=True):
 @functools.lru_cache(None)
 def detect_terminal_and_device_attributes():
     """Detect the terminal in use."""
-    xtv, = term_query(_csi(">0q"), r"(?:\x1bP>\|(\w+).*\x1b\\)?")
+    xtv, = term_query(_csi(">0q"), r"(?:\x1bP>\|(.*)\x1b\\)?")
     # Even with no primary DA reported there may or may not be a semicolon
     # before the final "c" (xterm says no, kitty says yes).
     da, = term_query(
