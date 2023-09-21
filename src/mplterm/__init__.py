@@ -20,39 +20,39 @@ except ImportError:
 
 _PROTOCOLS = {
     cls.__name__.lower(): cls for cls in [
-        _iterm2.Iterm2, _kitty.Kitty, _sixel.Sixel]}
+        # In default priority order.
+        _kitty.Kitty,
+        _iterm2.Iterm2,
+        _sixel.Sixel,
+    ]}
 
 
 def _load_options():
     opts = {
         "backend": "agg",
-        "protocol": None,
+        "protocols": [*_PROTOCOLS],
         "transparency": None,
         "revvideo": None,
     }
     for word in filter(None, os.environ.get("MPLTERM", "").split(";")):
         if word.startswith("backend="):
             opts["backend"] = word.removeprefix("backend=")
-        elif word.startswith("protocol="):
-            opts["protocol"] = word.removeprefix("protocol=")
+        elif word.startswith("protocols="):
+            opts["protocols"] = word.removeprefix("protocols=").split(",")
         elif word == "transparency":
             opts["transparency"] = True
         elif word == "revvideo":
             opts["revvideo"] = True
         else:
             raise ValueError(f"Unknown option: {word}")
-    if opts["protocol"] is None:
-        term, da = _util.detect_terminal_and_device_attributes()
-        if term in ["iTerm2", "mintty", "WezTerm"]:
-            opts["protocol"] = "iterm2"
-        elif term in ["kitty"]:
-            opts["protocol"] = "kitty"
-        elif "4" in da or term == "XTerm":
-            # If on XTerm without sixel support, still set the protocol to
-            # sixel to get the relevant error message.
-            opts["protocol"] = "sixel"
-        else:  # Else, error out at showtime.
-            opts["protocol"] = f"unsupported-terminal:{term or '<unknown>'}"
+    if len(opts["protocols"]) > 1:
+        for proto in opts["protocols"]:
+            if _PROTOCOLS[proto].is_supported():
+                opts["protocols"] = [proto]
+                break
+        else:  # Error out at showtime.
+            term, da = _util.detect_terminal_and_device_attributes()
+            opts["protocols"] = [f"unsupported-terminal:{term or '<unknown>'}"]
     return opts
 
 
@@ -92,7 +92,7 @@ def _revvideo(mem):
 
 class _MpltermFigureManager(FigureManagerBase):
     def show(self):
-        proto = _PROTOCOLS[_OPTIONS["protocol"]]()
+        proto = _PROTOCOLS[_OPTIONS["protocols"][0]]()
         fig = self.canvas.figure
         with ExitStack() as stack:
             size = _util.get_pixel_size()

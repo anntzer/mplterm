@@ -30,10 +30,12 @@ auto-detected, but can also be configured manually.
 Protocols
 ---------
 
+The following protocols are implemented; they are listed in the default order
+in which ``mplterm`` searches a protocol supported by the underlying terminal.
+
+- The ``kitty`` protocol is supported by the kitty and WezTerm terminals.
 - The ``iterm2`` protocol is supported by the iterm2, WezTerm, and wsltty_
   terminals.  Note that plain mintty_ is not supported.
-- The ``kitty`` protocol is only supported by the kitty terminal.  The
-  implementation is currently based on ``icat``, and thus requires ImageMagick.
 - The ``sixel`` protocol requires a `sixel-capable terminal`_ (xterm_ and
   mlterm_ are known to work) and ImageMagick≥7.0.1.  Note that ``mplterm`` will
   automatically and silently set (once) the ``numColorRegisters`` resource to
@@ -46,8 +48,10 @@ Configuration is done via the ``MPLTERM`` environment variable, which should be
 set to a semicolon-separate list of codes:
 
 - ``backend=...``: Set the underlying rendering backend (by default, "agg").
-- ``protocol=...``: Force the protocol to one of ``iterm2``, ``kitty``, or
-  ``sixel``.
+- ``protocols=...``: Force the protocol to one of ``kitty``, ``iterm2``, or
+  ``sixel``.  This parameter can also be set to a comma-separated list of
+  protocols, in which case they will be tried in that order and the first
+  protocol supported by the underlying terminal will be selected.
 - ``transparency``: Make the figure and axes background transparent, if the
   protocol supports transparency (the sixel protocol, implemented via
   ImageMagick_, doesn't support it).

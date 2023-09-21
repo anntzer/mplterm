@@ -11,7 +11,12 @@ class Protocol(ABC):
     @property
     @abstractmethod
     def supports_transparency(self):
-        """Whether the terminal supports transparent images."""
+        """Whether the protocol supports transparent images."""
+
+    @property
+    @abstractmethod
+    def is_supported(self):
+        """Whether the terminal supports this protocol."""
 
     @staticmethod
     @abstractmethod

@@ -4,11 +4,17 @@ import sys
 
 import PIL
 
+from . import _util
 from ._util import Protocol
 
 
 class Iterm2(Protocol):
     supports_transparency = True
+
+    @staticmethod
+    def is_supported():
+        term, da = _util.detect_terminal_and_device_attributes()
+        return term in ["iTerm2", "mintty", "WezTerm"]
 
     @staticmethod
     def display(mem):

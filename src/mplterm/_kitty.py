@@ -1,11 +1,16 @@
 import base64
 import sys
 
-from ._util import Protocol
+from ._util import Protocol, term_query
 
 
 class Kitty(Protocol):
     supports_transparency = True
+
+    @staticmethod
+    def is_supported():
+        return bool(term_query("\x1b_Gi=1,s=1,v=1,a=q,f=24;AAAA\x1b\\",
+                               "(\x1b_Gi=1;OK\x1b\\\\)")[0])
 
     @staticmethod
     def display(mem):
