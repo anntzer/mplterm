@@ -35,10 +35,10 @@ in which ``mplterm`` searches a protocol supported by the underlying terminal.
 - The ``kitty`` protocol is supported by the kitty and WezTerm_ terminals.
 - The ``iterm2`` protocol is supported by the iterm2, WezTerm, and wsltty_
   terminals.  Note that plain mintty_ is not supported.
-- The ``sixel`` protocol requires a `sixel-capable terminal`_ (xterm_ and
-  mlterm_ are known to work) and ImageMagick≥7.0.1.  Note that ``mplterm`` will
-  automatically and silently set (once) the ``numColorRegisters`` resource to
-  its maximum allowed value.
+- The ``sixel`` protocol requires a `sixel-capable terminal`_, such as xterm_,
+  and ImageMagick≥7.0.1.  Note that ``mplterm`` will automatically and
+  silently set (once) the ``numColorRegisters`` resource to its maximum allowed
+  value.
 
 Animations
 ~~~~~~~~~~
@@ -92,10 +92,9 @@ Other terminal backends for Matplotlib
 .. _matplotlib-sixel: https://github.com/koppa/matplotlib-sixel
 .. _matplotlib-sixel: https://github.com/koppa/matplotlib-sixel
 .. _mintty: https://mintty.github.io/
-.. _mlterm: http://mlterm.sourceforge.net/
 .. _pip: https://pip.pypa.io/
 .. _PySixel: https://pypi.org/project/PySixel/
-.. _sixel-capable terminal: https://github.com/saitoha/libsixel#terminal-requirements
+.. _sixel-capable terminal: https://www.arewesixelyet.com
 .. _sixel: https://en.wikipedia.org/wiki/Sixel
 .. _sixelplot: https://pypi.org/project/sixelplot/
 .. _xontrib-kitty: https://pypi.org/project/xontib-kitty/
