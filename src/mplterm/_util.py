@@ -54,7 +54,7 @@ def term_query(cmd, pattern, *, add_terminator=True):
         cmd = f"{cmd}{_csi('c')}"
         pattern = f"(?:{pattern})?" + _csi_regex(r"\?\d+[;0-9]*c")
         end_regex = re.compile(
-            (".*" + _csi_regex(r"\?\d+[;0-9]*c")).encode("latin-1"))
+            (".*" + _csi_regex(r"\?\d+[;0-9]*c") + r"\Z").encode("latin-1"))
     cmd = cmd.encode("latin-1")
     regex = re.compile(pattern.encode("latin-1"))
     match = None
@@ -98,6 +98,25 @@ def term_query(cmd, pattern, *, add_terminator=True):
         print(status_report("ok"), file=sys.stderr)
     return [group.decode("latin-1") if group else None
             for group in match.groups()]
+
+
+def xtgettcap(name):
+    name = "".join(map("{:02X}".format, name.encode("latin-1")))
+    status, value = term_query.__wrapped__(  # Skip cache, due to xtsettcap.
+        # In the reply, iterm2 uppercases the hex name whereas xterm & kitty
+        # repeat it as given, so match it case-insensitively.
+        f"\x1bP+q{name}\x1b\\",
+        f"\x1bP([01])\\+r(?i:{name})(?:=([0-9a-fA-F]*))?\x1b\\\\")
+    if status is None:
+        return None
+    elif status == "1":
+        return bytes.fromhex(value).decode("latin-1")
+    elif status == "0":
+        raise RuntimeError(
+            "Invalid XTGETTCAP request"
+            + (f"; got unexpected payload: {value}" if value else ""))
+    else:
+        assert False
 
 
 @functools.lru_cache(None)
