@@ -28,8 +28,9 @@ class Kitty(Protocol):
 
     @staticmethod
     def is_supported():
-        return bool(term_query("\x1b_Gi=1,s=1,v=1,a=q,f=24;AAAA\x1b\\",
-                               "(\x1b_Gi=1;OK\x1b\\\\)")[0])
+        q = term_query("\x1b_Gi=1,s=1,v=1,a=q,f=24;AAAA\x1b\\",
+                       "(\x1b_Gi=1;OK\x1b\\\\)")
+        return bool(q and q[0])
 
     @staticmethod
     def display(mem):
@@ -38,6 +39,8 @@ class Kitty(Protocol):
 
     @classmethod
     def display_frame(cls, holder_id, mem):
+        # TODO: Improve capability detection for animation support (it depends
+        # on Kitty version, and is not supported by ghostty).
         if holder_id not in cls._ids:
             h, w, _ = mem.shape
             try:

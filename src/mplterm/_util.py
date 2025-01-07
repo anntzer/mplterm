@@ -7,6 +7,8 @@ import re
 import sys
 import warnings
 
+import mplterm
+
 
 class Protocol(ABC):
     @property
@@ -35,7 +37,7 @@ class Protocol(ABC):
 
 # Helpers for generating control sequences and replies.
 def _csi(x): return "\x1b[" + x
-def _csi_regex(x): return r"\x1b\[" + x
+def _csi_regex(x): return "\x1b\\[" + x
 
 
 @functools.lru_cache(None)
@@ -51,8 +53,20 @@ def term_query(cmd, pattern, *, add_terminator=True):
     if add_terminator:
         cmd = f"{cmd}{_csi('c')}"
         pattern = f"(?:{pattern})?" + _csi_regex(r"\?\d+[;0-9]*c")
+        end_regex = re.compile(
+            (".*" + _csi_regex(r"\?\d+[;0-9]*c")).encode("latin-1"))
     cmd = cmd.encode("latin-1")
     regex = re.compile(pattern.encode("latin-1"))
+    match = None
+
+    def status_report(status):
+        return (
+            f"STATE: {status}\n"
+            f"QUERY: {cmd.decode('latin-1').replace('\x1b', '\u238b')}\n"
+            f"MATCH: {pattern.replace('\x1b', '\u238b')}\n"
+            f"READ:  {buf.decode('latin-1').replace('\x1b', '\u238b')}"
+        )
+
     try:
         curses.initscr()
         try:
@@ -63,17 +77,27 @@ def term_query(cmd, pattern, *, add_terminator=True):
             while True:
                 buf += sys.stdin.buffer.read(1)
                 match = regex.fullmatch(buf)
-                if match:
+                # Assume that matching the end regex directly *also*
+                # implies that the actual query failed (maybe because it is
+                # unsupported); e.g. iterm2 has a non-standard reply to kitty
+                # graphics protocol queries.
+                if match or (add_terminator and end_regex.match(buf)):
                     break
-            return [group.decode("latin-1") if group else None
-                    for group in match.groups()]
         finally:
             curses.endwin()
     except KeyboardInterrupt:
-        warnings.warn(
-            f"interrupted while querying {cmd} and the read buffer "
-            f"contained {buf}")
+        warnings.warn(status_report("interrupt"))
         raise
+    # To reach this point, match must have ended (with success or failure).
+    # This block is here so that debug-printing occurs after endwin().
+    if not match:
+        if mplterm._OPTIONS["debug"]:
+            print(status_report("fail"), file=sys.stderr)
+        return None
+    if mplterm._OPTIONS["debug"]:
+        print(status_report("ok"), file=sys.stderr)
+    return [group.decode("latin-1") if group else None
+            for group in match.groups()]
 
 
 @functools.lru_cache(None)
