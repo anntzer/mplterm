@@ -38,8 +38,9 @@ def _load_options():
     opts = {
         "backend": "agg",
         "protocols": [*_PROTOCOLS],
-        "transparency": None,
-        "revvideo": None,
+        "transparency": False,
+        "revvideo": False,
+        "debug": False,
     }
     for word in filter(None, os.environ.get("MPLTERM", "").split(";")):
         if word.startswith("backend="):
@@ -50,8 +51,14 @@ def _load_options():
             opts["transparency"] = True
         elif word == "revvideo":
             opts["revvideo"] = True
+        elif word == "debug":
+            opts["debug"] = True
         else:
             raise ValueError(f"Unknown option: {word}")
+    return opts
+
+
+def _adjust_protocol(opts):  # Split out so that debugging can be in effect.
     if len(opts["protocols"]) > 1:
         for proto in opts["protocols"]:
             if _PROTOCOLS[proto].is_supported():
@@ -60,13 +67,17 @@ def _load_options():
         else:  # Error out at showtime.
             term, da = _util.detect_terminal_and_device_attributes()
             opts["protocols"] = [f"unsupported-terminal:{term or '<unknown>'}"]
-    return opts
 
 
 _OPTIONS = _load_options()
+_adjust_protocol(_OPTIONS)
 _backend_module = (lambda name: importlib.import_module(
     name.removeprefix("module://") if name.startswith("module://")
     else f"matplotlib.backends.backend_{name.lower()}"))(_OPTIONS["backend"])
+
+
+def get_protocol():
+    return _OPTIONS["protocols"]
 
 
 @contextmanager

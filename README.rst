@@ -33,6 +33,8 @@ The following protocols are implemented; they are listed in the default order
 in which ``mplterm`` searches a protocol supported by the underlying terminal.
 
 - The ``kitty`` protocol is supported by the kitty and WezTerm_ terminals.
+  The ghostty_ terminal only provides partial support for this protocol; in
+  particular, it does not support animations (at the time of writing).
 - The ``iterm2`` protocol is supported by the iterm2, WezTerm, and wsltty_
   terminals.  Note that plain mintty_ is not supported.
 - The ``sixel`` protocol requires a `sixel-capable terminal`_, such as xterm_,
@@ -83,6 +85,7 @@ Other terminal backends for Matplotlib
   - sixelplot_ (wraps PySixel_; not a Matplotlib backend but rather provides
     ``sixelplot.show()`` which displays the current figure).
 
+.. _ghostty: https://ghostty.org
 .. _ImageMagick: https://imagemagick.org/
 .. _ipykernel: https://pypi.org/project/ipykernel/
 .. _iterm2: https://iterm2.com/documentation-images.html
