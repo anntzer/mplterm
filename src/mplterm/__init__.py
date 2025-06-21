@@ -130,7 +130,8 @@ class _MpltermFigureManager(FigureManagerBase):
                     # at the same time as the save loop, which would be racy.
                     for timer in self.canvas._timers.values():
                         timer.blocked = True
-                    self.canvas.draw()
+                    if mpl.__version_info__ < (3, 11):  # mpl#26774
+                        self.canvas.draw()
                     for _, timer in sorted(self.canvas._timers.items()):
                         for cb, *_ in timer.callbacks:
                             anim = getattr(cb, "__self__", None)
