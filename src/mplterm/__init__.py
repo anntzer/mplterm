@@ -11,6 +11,7 @@ from tempfile import TemporaryDirectory
 from threading import Timer
 from weakref import WeakValueDictionary
 
+import matplotlib as mpl
 from matplotlib.animation import Animation
 from matplotlib.backend_bases import FigureManagerBase, TimerBase
 import numpy as np
@@ -125,7 +126,7 @@ class _MpltermFigureManager(FigureManagerBase):
                 stack.enter_context(_transparized(self.canvas.figure))
 
             if self.canvas._timers:
-                if proto.display_frame is _util.Protocol.display_frame:
+                if True or proto.display_frame is _util.Protocol.display_frame:
                     # Block timers so that they don't try to advance animations
                     # at the same time as the save loop, which would be racy.
                     for timer in self.canvas._timers.values():
